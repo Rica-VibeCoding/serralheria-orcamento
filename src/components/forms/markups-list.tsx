@@ -145,10 +145,10 @@ export function MarkupsList() {
     }
 
     return (
-        <Card>
+        <Card className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border-slate-400/60 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Pontuações (Markups)</CardTitle>
+                    <CardTitle className="text-slate-700">Pontuações (Markups)</CardTitle>
                     <CardDescription>Gerencie suas opções de marcação de preço.</CardDescription>
                 </div>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>

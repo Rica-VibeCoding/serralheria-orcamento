@@ -147,10 +147,10 @@ export function ProfilesList() {
     }
 
     return (
-        <Card className="mt-6">
+        <Card className="mt-6 bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border-slate-400/60 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Perfis de Metalon</CardTitle>
+                    <CardTitle className="text-slate-700">Perfis de Metalon</CardTitle>
                     <CardDescription>Gerencie seus materiais.</CardDescription>
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>
