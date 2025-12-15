@@ -177,6 +177,7 @@ export function MarkupsList() {
                                     max="10"
                                     value={formData.value}
                                     onChange={e => setFormData({ ...formData, value: parseFloat(e.target.value) || 1 })}
+                                    onFocus={e => e.target.select()}
                                 />
                             </div>
                             <Button onClick={handleAdd} className="w-full" disabled={loading}>
@@ -250,6 +251,7 @@ export function MarkupsList() {
                                     max="10"
                                     value={formData.value}
                                     onChange={e => setFormData({ ...formData, value: parseFloat(e.target.value) || 1 })}
+                                    onFocus={e => e.target.select()}
                                 />
                             </div>
                             <Button onClick={handleEdit} className="w-full" disabled={loading}>
