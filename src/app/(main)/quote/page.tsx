@@ -271,7 +271,7 @@ function QuotePageContent() {
     return (
         <div className="space-y-6 pb-20">
             {/* --- TOPO --- */}
-            <Card>
+            <Card className="bg-slate-50 border-slate-200">
                 <CardHeader className="pb-4 flex flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-2">
                         <CardTitle className="text-xl">Orçamento</CardTitle>
@@ -470,7 +470,7 @@ function QuotePageContent() {
             </div>
 
             {/* --- RODAPÉ (TOTAIS) --- */}
-            <Card className="bg-muted/30">
+            <Card className="bg-amber-50/50 border-amber-200">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Resumo</CardTitle>
                 </CardHeader>
@@ -547,9 +547,9 @@ function QuotePageContent() {
                                 <Separator />
 
                                 {/* Valor de Venda (VALOR FINAL) */}
-                                <div className="flex justify-between items-center bg-primary/10 p-3 rounded-md">
-                                    <span className="font-bold text-base">Valor de Venda</span>
-                                    <span className="font-bold text-xl">{formatCurrency(totals.valor_final)}</span>
+                                <div className="flex justify-between items-center bg-green-100 border border-green-300 p-3 rounded-md">
+                                    <span className="font-bold text-base text-green-900">Valor de Venda</span>
+                                    <span className="font-bold text-xl text-green-800">{formatCurrency(totals.valor_final)}</span>
                                 </div>
                             </>
                         )

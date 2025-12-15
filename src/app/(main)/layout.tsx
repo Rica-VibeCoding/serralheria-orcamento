@@ -75,7 +75,7 @@ export default function MainLayout({
                     </AlertDialog>
                 </div>
             </header>
-            <main className="flex-1 px-4 py-6">
+            <main className="flex-1 px-4 py-6 bg-slate-50/50">
                 <div className="mx-auto max-w-md">
                     {children}
                 </div>
