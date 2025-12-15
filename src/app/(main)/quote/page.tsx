@@ -274,7 +274,7 @@ function QuotePageContent() {
             <Card>
                 <CardHeader className="pb-4 flex flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <CardTitle className="text-xl">Dados do Orçamento</CardTitle>
+                        <CardTitle className="text-xl">Orçamento</CardTitle>
                         <div className="flex items-center gap-2">
                             {isSaving ? (
                                 <span className="flex items-center text-xs text-muted-foreground animate-pulse">
