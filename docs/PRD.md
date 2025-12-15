@@ -222,35 +222,35 @@ Botão “Copiar” cola exatamente como texto para enviar no WhatsApp.
 
 # 8. Modelo de dados (tabelas sugeridas — Supabase/Postgres)
 
-**users**
+**so_users** (nota: geralmente usa-se auth.users do Supabase, mas se estender: so_profiles)
 
 * id (uuid), name, email, created_at
 
-**clients**
+**so_clients**
 
 * id, user_id, name, phone, created_at
 
-**profiles_metalon** (materiais)
+**so_profiles_metalon** (materiais)
 
 * id, user_id, nome (eg "2x2"), espessura, custo_por_metro (numeric), created_at
 
-**configurations**
+**so_configurations**
 
 * id, user_id, valor_por_corte, valor_por_solda, valor_por_km, percentual_pintura_default, validade_padrao, created_at
 
-**markups**
+**so_markups**
 
 * id, user_id, label, value (numeric, ex 1.8)
 
-**quotes** (orçamentos)
+**so_quotes** (orçamentos)
 
 * id, user_id, client_id, pontuacao_id, km_rodado, validade_dias, observacoes, total_material, subtotal_pos_markup, custo_cortes, custo_soldas, custo_transporte, produtos_genericos, valor_final, lucro_absoluto, lucro_percentual, created_at
 
-**quote_items**
+**so_quote_items**
 
 * id, quote_id, type (metal|generic), profile_id (nullable), descricao (for generic), quantidade, metros_por_unidade (nullable), pintar (bool), custo_material_item, cortes_extras, soldas_extras
 
-**quote_generic_products**
+**so_quote_generic_products**
 
 * id, quote_id, descricao, quantidade, valor_unitario
 

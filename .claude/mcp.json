@@ -1,0 +1,74 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-supabase"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://qxhmkenttvmkhgotkxzt.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "description": "Acesso direto ao banco Supabase para consultas SQL, RLS e migrações"
+    },
+
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp-server"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      },
+      "description": "Documentação Next.js 16, React 19, Supabase e TypeScript"
+    },
+
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-shadcn"
+      ],
+      "description": "Componentes shadcn/ui e Radix UI"
+    },
+
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/mnt/c/Users/ricar/Projetos/serralheria_orçamento"
+      ],
+      "description": "Acesso ao filesystem do projeto"
+    },
+
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "Gestão de repositório, issues e PRs"
+    }
+  },
+
+  "context": {
+    "projectName": "Sistema de Orçamentos - Serralheria Pro",
+    "stack": [
+      "Next.js 16",
+      "React 19",
+      "TypeScript 5",
+      "Supabase",
+      "Tailwind CSS 4",
+      "shadcn/ui",
+      "Zod"
+    ],
+    "domain": "Sistema de geração de orçamentos para serralheria com cálculo automático de custos (material, cortes, soldas, transporte, pintura) e integração WhatsApp",
+    "architecture": "Next.js App Router + Supabase RLS + Client Components"
+  }
+}
