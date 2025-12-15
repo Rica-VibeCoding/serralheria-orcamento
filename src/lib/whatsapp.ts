@@ -13,15 +13,24 @@ export function generateWhatsAppText(
     observacoes: string
 ): string {
     const clientName = client?.name || "Cliente não informado"
+    const separator = "────────────────────"
 
-    let itemLines = ""
+    // Build MATERIAL section (metalon bars) - COM MARKUP
+    let materialLines = ""
     items.forEach(item => {
-        itemLines += `- ${item.profile_nome} — ${item.quantidade} barras x ${item.metros_por_barra}m = ${item.metros_totais}m\n`
-        itemLines += `  Pintura: ${item.pintura ? "Sim" : "Não"}\n`
-        itemLines += `  Custo material: ${formatCurrency(item.total_item)}\n` // Using total_item which is cost + paint
+        const paintSuffix = item.pintura ? " (com pintura)" : ""
+        const valorComMarkup = item.total_item * pontuacao // Aplicar markup ao custo
+        materialLines += `• ${item.quantidade} barra${item.quantidade > 1 ? 's' : ''} ${item.profile_nome} – ${item.metros_por_barra}m${paintSuffix}: ${formatCurrency(valorComMarkup)}\n`
     })
 
-    // Calculations for cuts/welds display
+    // Add generic products to material section - COM MARKUP
+    products.forEach(prod => {
+        const valorComMarkup = prod.total * pontuacao // Aplicar markup aos produtos
+        materialLines += `• ${prod.descricao} (${prod.quantidade} un.): ${formatCurrency(valorComMarkup)}\n`
+    })
+
+    // Build SERVIÇOS section
+    // Calculate cuts/welds totals
     let total_cuts = 0
     let total_welds = 0
     items.forEach(item => {
@@ -29,32 +38,57 @@ export function generateWhatsAppText(
         total_welds += item.quantidade + (item.soldas_extras || 0)
     })
 
-    const prodLines = products.length > 0
-        ? products.map(p => `- ${p.descricao} (${p.quantidade}x) = ${formatCurrency(p.total)}`).join("\n")
-        : "Nenhum"
+    // Calculate total paint cost - COM MARKUP (pois está no material)
+    let total_pintura = 0
+    items.forEach(item => {
+        if (item.pintura) {
+            total_pintura += (item.custo_pintura || 0) * pontuacao
+        }
+    })
 
-    return `*ORÇAMENTO — Estrutura Metalon*
+    let servicosLines = ""
+    if (total_cuts > 0) {
+        servicosLines += `• Cortes (${total_cuts} un.): ${formatCurrency(totals.custo_cortes)}\n`
+    }
+    if (total_welds > 0) {
+        servicosLines += `• Soldas (${total_welds} un.): ${formatCurrency(totals.custo_soldas)}\n`
+    }
+    if (km > 0) {
+        servicosLines += `• Transporte (${km} km): ${formatCurrency(totals.custo_transporte)}\n`
+    }
+    if (total_pintura > 0) {
+        servicosLines += `• Pintura: Inclusa 🎨 ${formatCurrency(total_pintura)}\n`
+    }
 
-*Cliente:* ${clientName}
-*Itens:*
-${itemLines}
+    // Build final text
+    let text = `🔧 *RONI SERRALHERIA*
 
-*Subtotal material (c/ pintura):* ${formatCurrency(totals.total_material)}
-*Pontuação aplicada:* x${pontuacao} → ${formatCurrency(totals.subtotal_pos_markup)}
+👤 Cliente: ${clientName}
 
-*Cortes:* ${total_cuts} un. = ${formatCurrency(totals.custo_cortes)}
-*Soldas:* ${total_welds} un. = ${formatCurrency(totals.custo_soldas)}
-*Transporte:* ${km} km = ${formatCurrency(totals.custo_transporte)}
-*Produtos/Outros:* ${formatCurrency(totals.custo_produtos_genericos)}
-${prodLines !== "Nenhum" ? `\nDetalhe produtos:\n${prodLines}` : ""}
+${separator}`
 
-*VALOR FINAL: ${formatCurrency(totals.valor_final)}*
+    // Add MATERIAL section if has items
+    if (materialLines) {
+        text += `\n📦 *MATERIAL*\n${materialLines}`
+    }
 
-Lucro estimado: ${formatCurrency(totals.lucro_absoluto)} (${totals.lucro_percentual.toFixed(1)}%)
+    // Add SERVIÇOS section if has services
+    if (servicosLines) {
+        text += `\n${separator}\n🛠️ *SERVIÇOS*\n${servicosLines}`
+    }
 
-Validade: ${validade} dias
-Prazo: a combinar
+    // VALOR FINAL
+    text += `\n${separator}\n\n👉🏼 *VALOR FINAL ${formatCurrency(totals.valor_final)}*\n`
 
-Obs: ${observacoes}
-`
+    // Footer info
+    text += `\n${separator}\n📅 Validade do orçamento: ${validade} dias\n⏳ Prazo de execução: a combinar\n💳 Forma de pagamento: a combinar`
+
+    // Add observations if provided
+    if (observacoes && observacoes.trim()) {
+        text += `\n\nℹ️ ${observacoes.trim()}`
+    } else {
+        text += `\n\nℹ️ Valor já inclui o serviço de instalação.`
+    }
+
+    return text
 }

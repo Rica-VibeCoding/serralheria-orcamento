@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 interface QuoteWithClient {
     id: string
+    quote_number?: number // Optional until migration is executed
     created_at: string
     client_id: string
     client_name?: string
@@ -41,11 +42,12 @@ export default function QuotesPage() {
     async function fetchQuotes() {
         setLoading(true)
 
-        // Fetch quotes with client data
+        // Fetch quotes with client data (exclude inactive/deleted)
         const { data: quotesData, error: quotesError } = await supabase
             .from('so_quotes')
             .select('*')
             .eq('user_id', user!.id)
+            .neq('status', 'inactive') // Exclude soft-deleted quotes
             .order('created_at', { ascending: false })
 
         if (quotesError) {
@@ -74,20 +76,47 @@ export default function QuotesPage() {
 
     const filteredQuotes = quotes.filter(q =>
         q.client_name?.toLowerCase().includes(search.toLowerCase()) ||
-        q.id.toLowerCase().includes(search.toLowerCase())
+        q.id.toLowerCase().includes(search.toLowerCase()) ||
+        (q.quote_number && formatQuoteNumber(q.quote_number).toLowerCase().includes(search.toLowerCase()))
     )
+
+    const formatQuoteNumber = (number?: number) => {
+        if (!number && number !== 0) return 'R-####' // Fallback se migration não foi executada
+        return `R-${number.toString().padStart(4, '0')}`
+    }
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            draft: { label: 'Rascunho', variant: 'secondary' as const, color: 'text-gray-700' },
-            sent: { label: 'Enviado', variant: 'default' as const, color: 'text-blue-700' },
-            approved: { label: 'Aprovado', variant: 'default' as const, color: 'text-green-700' },
-            rejected: { label: 'Rejeitado', variant: 'destructive' as const, color: 'text-red-700' }
+            open: { label: 'Não fechou', variant: 'secondary' as const, color: 'text-gray-700' },
+            closed: { label: 'Fechado', variant: 'default' as const, color: 'text-green-700' }
         }
-        return statusConfig[status as keyof typeof statusConfig] || statusConfig.draft
+        return statusConfig[status as keyof typeof statusConfig] || statusConfig.open
     }
 
     const handleStatusChange = async (quoteId: string, newStatus: string) => {
+        // If deleting (inactive), remove from UI immediately
+        if (newStatus === 'inactive') {
+            const toastId = toast.loading("Excluindo orçamento...")
+
+            const { error } = await supabase
+                .from('so_quotes')
+                .update({ status: 'inactive' })
+                .eq('id', quoteId)
+                .eq('user_id', user!.id)
+
+            if (error) {
+                toast.error("Erro ao excluir orçamento: " + error.message, { id: toastId })
+                return
+            }
+
+            toast.success("Orçamento excluído com sucesso!", { id: toastId })
+
+            // Remove from local state (soft delete)
+            setQuotes(prev => prev.filter(q => q.id !== quoteId))
+            return
+        }
+
+        // Normal status update
         const toastId = toast.loading("Atualizando status...")
 
         const { error } = await supabase
@@ -148,6 +177,9 @@ export default function QuotesPage() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <FileText className="h-4 w-4 text-muted-foreground" />
                                                 <span className="font-semibold">{quote.client_name}</span>
+                                                <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                                                    {formatQuoteNumber(quote.quote_number)}
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                                 <span className="flex items-center gap-1">
@@ -168,10 +200,9 @@ export default function QuotesPage() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="draft">Rascunho</SelectItem>
-                                                <SelectItem value="sent">Enviado</SelectItem>
-                                                <SelectItem value="approved">Aprovado</SelectItem>
-                                                <SelectItem value="rejected">Rejeitado</SelectItem>
+                                                <SelectItem value="open">Não fechou</SelectItem>
+                                                <SelectItem value="closed">Fechado</SelectItem>
+                                                <SelectItem value="inactive" className="text-destructive">Excluir</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

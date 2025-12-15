@@ -95,7 +95,17 @@ create table so_quote_generic_products (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- RLS (Row Level Security) - Básico: Usuário só vê seus dados
+-- ============================================================================
+-- RLS (Row Level Security) - Multi-Tenant Data Isolation
+-- ============================================================================
+-- Best Practices Applied:
+-- 1. Separate policies for each operation (SELECT, INSERT, UPDATE, DELETE)
+-- 2. WITH CHECK clause for INSERT (prevents 400 Bad Request errors)
+-- 3. Both USING and WITH CHECK for UPDATE (validates before and after)
+-- 4. Optimized IN subqueries for child tables (better than EXISTS/JOIN)
+-- 5. Explicit (select auth.uid()) for better compatibility
+-- ============================================================================
+
 alter table so_profiles_metalon enable row level security;
 alter table so_clients enable row level security;
 alter table so_configurations enable row level security;
@@ -104,10 +114,101 @@ alter table so_quotes enable row level security;
 alter table so_quote_items enable row level security;
 alter table so_quote_generic_products enable row level security;
 
-create policy "Users can crud their own profiles" on so_profiles_metalon for all using (auth.uid() = user_id);
-create policy "Users can crud their own clients" on so_clients for all using (auth.uid() = user_id);
-create policy "Users can crud their own configs" on so_configurations for all using (auth.uid() = user_id);
-create policy "Users can crud their own markups" on so_markups for all using (auth.uid() = user_id);
-create policy "Users can crud their own quotes" on so_quotes for all using (auth.uid() = user_id);
-create policy "Users can crud their own quote items" on so_quote_items for all using (quote_id in (select id from so_quotes where user_id = auth.uid()));
-create policy "Users can crud their own generic products" on so_quote_generic_products for all using (quote_id in (select id from so_quotes where user_id = auth.uid()));
+-- so_profiles_metalon policies
+create policy "Users can view their own profiles" on so_profiles_metalon
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can insert their own profiles" on so_profiles_metalon
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own profiles" on so_profiles_metalon
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own profiles" on so_profiles_metalon
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- so_clients policies
+create policy "Users can view their own clients" on so_clients
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can insert their own clients" on so_clients
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own clients" on so_clients
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own clients" on so_clients
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- so_configurations policies
+create policy "Users can view their own configs" on so_configurations
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can insert their own configs" on so_configurations
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own configs" on so_configurations
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own configs" on so_configurations
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- so_markups policies
+create policy "Users can view their own markups" on so_markups
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can insert their own markups" on so_markups
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own markups" on so_markups
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own markups" on so_markups
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- so_quotes policies (CRITICAL: WITH CHECK prevents 400 Bad Request on INSERT)
+create policy "Users can view their own quotes" on so_quotes
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can insert their own quotes" on so_quotes
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own quotes" on so_quotes
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own quotes" on so_quotes
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- so_quote_items policies (optimized with IN for better performance)
+create policy "Users can view their own quote items" on so_quote_items
+  for select to authenticated using (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+create policy "Users can insert their own quote items" on so_quote_items
+  for insert to authenticated with check (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+create policy "Users can update their own quote items" on so_quote_items
+  for update to authenticated
+  using (quote_id in (select id from so_quotes where user_id = (select auth.uid())))
+  with check (quote_id in (select id from so_quotes where user_id = (select auth.uid())));
+create policy "Users can delete their own quote items" on so_quote_items
+  for delete to authenticated using (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+
+-- so_quote_generic_products policies (optimized with IN for better performance)
+create policy "Users can view their own generic products" on so_quote_generic_products
+  for select to authenticated using (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+create policy "Users can insert their own generic products" on so_quote_generic_products
+  for insert to authenticated with check (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+create policy "Users can update their own generic products" on so_quote_generic_products
+  for update to authenticated
+  using (quote_id in (select id from so_quotes where user_id = (select auth.uid())))
+  with check (quote_id in (select id from so_quotes where user_id = (select auth.uid())));
+create policy "Users can delete their own generic products" on so_quote_generic_products
+  for delete to authenticated using (
+    quote_id in (select id from so_quotes where user_id = (select auth.uid()))
+  );
+
+-- ============================================================================
+-- Performance Indexes
+-- ============================================================================
+-- Optimize RLS policy execution with indexes on frequently checked columns
+
+create index if not exists idx_profiles_metalon_user_id on so_profiles_metalon(user_id);
+create index if not exists idx_clients_user_id on so_clients(user_id);
+create index if not exists idx_configurations_user_id on so_configurations(user_id);
+create index if not exists idx_markups_user_id on so_markups(user_id);
+create index if not exists idx_quotes_user_id on so_quotes(user_id);
+create index if not exists idx_quote_items_quote_id on so_quote_items(quote_id);
+create index if not exists idx_generic_products_quote_id on so_quote_generic_products(quote_id);

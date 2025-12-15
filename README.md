@@ -1,13 +1,15 @@
 # Serralheria Orçamento 🛠️
 
-App mobile-first para geração rápida de orçamentos de estruturas em metalon via WhatsApp.
+**App mobile-first (iPhone)** para geração rápida de orçamentos de estruturas em metalon via WhatsApp.
+
+> Interface otimizada especificamente para uso em iPhone em campo. Layout vertical, botões touch-friendly (48px+) e navegação inferior para fácil acesso com uma mão.
 
 ## 🚀 Tecnologias
 
-- **Framework:** Next.js 14 (App Router)
-- **Linguagem:** TypeScript
-- **Estilização:** Tailwind CSS + shadcn/ui
-- **Banco de Dados/Auth:** Supabase
+- **Framework:** Next.js 16 (App Router)
+- **Linguagem:** TypeScript 5
+- **UI:** Tailwind CSS 4 + shadcn/ui
+- **Banco de Dados/Auth:** Supabase (RLS)
 
 ## 🛠️ Configuração Inicial
 
@@ -25,7 +27,7 @@ App mobile-first para geração rápida de orçamentos de estruturas em metalon 
 
 ## 🗄️ Banco de Dados (Supabase)
 
-O projeto utiliza o Supabase com Row Level Security (RLS). Todas as tabelas do projeto possuem o prefixo `so_` para evitar conflitos no esquema `public`.
+O projeto utiliza o Supabase com **Row Level Security (RLS)** para isolamento multi-usuário. Todas as tabelas possuem o prefixo `so_` para evitar conflitos no esquema `public`.
 
 ### Tabelas Principais:
 
@@ -37,16 +39,54 @@ O projeto utiliza o Supabase com Row Level Security (RLS). Todas as tabelas do p
 - `so_quote_items`: Itens do orçamento (barras).
 - `so_quote_generic_products`: Produtos avulsos (fechaduras, chapas, etc).
 
+### Configuração do Banco de Dados
+
+**Primeira instalação:**
+```bash
+# Execute o schema completo no SQL Editor do Supabase Dashboard
+# Arquivo: supabase/schema.sql
+```
+
+**Se já tiver dados e precisar atualizar as políticas RLS:**
+```bash
+# Execute a migração no SQL Editor do Supabase Dashboard
+# Arquivo: supabase/migrations/001_rls_policies_best_practices.sql
+```
+
+### Segurança RLS (Row Level Security)
+
+O projeto implementa **isolamento completo multi-usuário** através de políticas RLS:
+
+- ✅ Cada usuário vê apenas seus próprios dados
+- ✅ Políticas separadas por operação (SELECT, INSERT, UPDATE, DELETE)
+- ✅ Validação com `WITH CHECK` para prevenir erros 400
+- ✅ Otimizado com índices para performance
+- ✅ Compatível com múltiplos usuários simultâneos
+
+**Política de Segurança:** Todos os dados são filtrados por `user_id = auth.uid()`, garantindo que usuários não possam acessar dados de outros usuários, mesmo com acesso direto ao banco.
+
 ## 📱 Funcionalidades
 
-- **Login Simples**: Autenticação via email/senha.
-- **Configurações**: Defina seus custos bases uma única vez.
-- **Orçamento Rápido**:
-  - Adicione barras (cálculo automático de cortes e soldas).
-  - Adicione produtos extras.
-  - Defina KM de entrega.
-  - Selecione a margem de lucro (Markup).
-- **Exportação**: Gera texto formatado pronto para enviar e "colar" no WhatsApp.
+- **Login Simples**: Autenticação via email/senha (Supabase Auth)
+- **Configurações Únicas**: Defina custos base (corte, solda, km, % pintura) uma vez
+- **Criação de Orçamento Rápido**:
+  - Adicione barras de metalon (cálculo automático de cortes e soldas)
+  - Adicione produtos extras (fechaduras, chapas, etc)
+  - Defina KM de entrega
+  - Selecione margem de lucro (Markup customizável)
+  - Cálculo em tempo real do lucro
+- **Exportação WhatsApp**: Texto formatado pronto para copiar e colar
+- **Edição de Orçamentos**: Reabra e edite orçamentos salvos
+- **Gestão de Clientes**: Cadastro simples com nome e telefone
+
+## 🎨 Design Mobile-First
+
+A interface foi projetada especificamente para iPhone:
+- **Layout vertical**: Máximo de largura `max-w-md` (448px)
+- **Navegação inferior**: Barra fixa no rodapé para acesso com polegar
+- **Botões grandes**: Mínimo 48px de altura (touch targets WCAG AA)
+- **Sem scroll horizontal**: Tudo adaptado para tela estreita
+- **Otimizado para 3G/4G**: Carregamento paralelo de dados
 
 ## 📦 Scripts
 

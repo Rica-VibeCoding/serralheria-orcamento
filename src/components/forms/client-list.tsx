@@ -4,15 +4,13 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Search, Plus, User, Pencil } from "lucide-react"
-import { toast } from "sonner"
 import { supabase } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { ClientSchema } from "@/lib/validations"
 import type { Client } from "@/types"
+import { ClientForm } from "./client-form"
 
 export function ClientList() {
     const { user } = useAuth()
@@ -20,10 +18,7 @@ export function ClientList() {
     const [search, setSearch] = useState("")
     const [open, setOpen] = useState(false)
     const [editOpen, setEditOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [newClient, setNewClient] = useState({ name: '', phone: '' })
     const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-    const [editClient, setEditClient] = useState({ name: '', phone: '' })
 
     useEffect(() => {
         if (!user) return
@@ -45,84 +40,20 @@ export function ClientList() {
         c.phone?.includes(search)
     )
 
-    const handleAdd = async () => {
-        if (!newClient.name || !user) {
-            toast.error("Nome é obrigatório")
-            return
-        }
+    const handleSuccessCreate = (newClient: Client) => {
+        setClients([...clients, newClient]) // Append is fine, or refetch
+        setOpen(false)
+    }
 
-        // Validate with Zod
-        const validation = ClientSchema.safeParse({
-            name: newClient.name,
-            phone: newClient.phone || ''
-        })
-
-        if (!validation.success) {
-            toast.error(validation.error.issues[0].message)
-            return
-        }
-
-        setLoading(true)
-        const { data, error } = await supabase.from('so_clients').insert({
-            user_id: user.id,
-            name: newClient.name,
-            phone: newClient.phone
-        }).select()
-
-        if (error) {
-            toast.error(error.message)
-        } else if (data) {
-            setClients([...clients, data[0]])
-            setOpen(false)
-            setNewClient({ name: '', phone: '' })
-            toast.success("Cliente adicionado!")
-        }
-        setLoading(false)
+    const handleSuccessUpdate = (updatedClient: Client) => {
+        setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c))
+        setEditOpen(false)
+        setSelectedClient(null)
     }
 
     const handleEditOpen = (client: Client) => {
         setSelectedClient(client)
-        setEditClient({ name: client.name, phone: client.phone || '' })
         setEditOpen(true)
-    }
-
-    const handleEdit = async () => {
-        if (!editClient.name || !selectedClient || !user) {
-            toast.error("Nome é obrigatório")
-            return
-        }
-
-        // Validate with Zod
-        const validation = ClientSchema.safeParse({
-            name: editClient.name,
-            phone: editClient.phone || ''
-        })
-
-        if (!validation.success) {
-            toast.error(validation.error.issues[0].message)
-            return
-        }
-
-        setLoading(true)
-        const { data, error } = await supabase
-            .from('so_clients')
-            .update({
-                name: editClient.name,
-                phone: editClient.phone
-            })
-            .eq('id', selectedClient.id)
-            .select()
-
-        if (error) {
-            toast.error(error.message)
-        } else if (data) {
-            setClients(clients.map(c => c.id === selectedClient.id ? data[0] : c))
-            setEditOpen(false)
-            setSelectedClient(null)
-            setEditClient({ name: '', phone: '' })
-            toast.success("Cliente atualizado!")
-        }
-        setLoading(false)
     }
 
     return (
@@ -145,54 +76,47 @@ export function ClientList() {
                         <DialogHeader>
                             <DialogTitle>Novo Cliente</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label>Nome Completo</Label>
-                                <Input
-                                    value={newClient.name}
-                                    onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                                    placeholder="Ex: João da Silva"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Telefone / WhatsApp</Label>
-                                <Input
-                                    value={newClient.phone}
-                                    onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                                    placeholder="Ex: 11 99999-9999"
-                                />
-                            </div>
-                            <Button onClick={handleAdd} className="w-full" disabled={loading}>
-                                {loading ? "Cadastrando..." : "Cadastrar"}
-                            </Button>
-                        </div>
+                        <ClientForm
+                            onSuccess={handleSuccessCreate}
+                            onCancel={() => setOpen(false)}
+                        />
                     </DialogContent>
                 </Dialog>
             </div>
 
-            <div className="space-y-2">
+            <div className="grid gap-1">
                 {filteredClients.map((client) => (
-                    <Card key={client.id} className="hover:bg-accent/50 transition-colors">
-                        <CardContent className="flex items-center p-4">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
-                                <User className="h-5 w-5 text-primary" />
+                    <div
+                        key={client.id}
+                        className="group flex items-center justify-between p-2 rounded-md border bg-card hover:bg-accent/50 transition-all cursor-pointer active:scale-[0.99]"
+                        onClick={() => handleEditOpen(client)}
+                    >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                                <User className="h-4 w-4" />
                             </div>
-                            <div className="flex-1">
-                                <div className="font-medium">{client.name}</div>
-                                <div className="text-sm text-muted-foreground">{client.phone}</div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="font-semibold text-sm leading-none truncate">{client.name}</span>
+                                {client.phone && (
+                                    <span className="text-[11px] text-muted-foreground leading-none mt-1 truncate">{client.phone}</span>
+                                )}
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEditOpen(client)}
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </Button>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditOpen(client)
+                            }}
+                        >
+                            <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                    </div>
                 ))}
                 {filteredClients.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-6 text-sm text-muted-foreground border border-dashed rounded-lg bg-muted/20">
                         Nenhum cliente encontrado.
                     </div>
                 )}
@@ -204,27 +128,13 @@ export function ClientList() {
                     <DialogHeader>
                         <DialogTitle>Editar Cliente</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label>Nome Completo</Label>
-                            <Input
-                                value={editClient.name}
-                                onChange={(e) => setEditClient({ ...editClient, name: e.target.value })}
-                                placeholder="Ex: João da Silva"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Telefone / WhatsApp</Label>
-                            <Input
-                                value={editClient.phone}
-                                onChange={(e) => setEditClient({ ...editClient, phone: e.target.value })}
-                                placeholder="Ex: 11 99999-9999"
-                            />
-                        </div>
-                        <Button onClick={handleEdit} className="w-full" disabled={loading}>
-                            {loading ? "Salvando..." : "Salvar"}
-                        </Button>
-                    </div>
+                    {selectedClient && (
+                        <ClientForm
+                            initialData={selectedClient}
+                            onSuccess={handleSuccessUpdate}
+                            onCancel={() => setEditOpen(false)}
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

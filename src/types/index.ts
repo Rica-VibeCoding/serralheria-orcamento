@@ -77,7 +77,8 @@ export interface QuoteTotals {
     custo_cortes: number
     custo_soldas: number
     custo_transporte: number
-    custo_produtos_genericos: number
+    custo_produtos_genericos: number // Custo sem markup
+    produtos_com_markup: number // Valor com markup
     valor_final: number
     lucro_absoluto: number
     lucro_percentual: number

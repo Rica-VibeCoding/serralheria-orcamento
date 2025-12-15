@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,20 +17,41 @@ import type { QuoteItem, MetalonProfile } from "@/types"
 interface AddItemModalProps {
     profiles: MetalonProfile[]
     onAdd: (item: QuoteItem) => void
+    onUpdate?: (item: QuoteItem) => void
+    onDelete?: (id: string) => void
+    editingItem?: QuoteItem
+    isOpen?: boolean
+    onOpenChange?: (open: boolean) => void
     paintPercentage: number
 }
 
-export function AddItemModal({ profiles, onAdd, paintPercentage }: AddItemModalProps) {
+export function AddItemModal({ profiles, onAdd, onUpdate, onDelete, editingItem, isOpen, onOpenChange, paintPercentage }: AddItemModalProps) {
     const [open, setOpen] = useState(false)
+
+    // Use controlled state if provided, otherwise use internal state
+    const modalOpen = isOpen !== undefined ? isOpen : open
+    const setModalOpen = onOpenChange || setOpen
 
     // Form State
     const [profileId, setProfileId] = useState("")
     const [quantity, setQuantity] = useState(1)
     const [metersPerBar, setMetersPerBar] = useState(6)
-    const [paint, setPaint] = useState(false)
+    const [paint, setPaint] = useState(true) // Default: pintura ativada
     const [extraCuts, setExtraCuts] = useState(0)
     const [extraWelds, setExtraWelds] = useState(0)
     const [errors, setErrors] = useState<Record<string, string>>({})
+
+    // Populate form when editing
+    useEffect(() => {
+        if (editingItem) {
+            setProfileId(editingItem.profile_id)
+            setQuantity(editingItem.quantidade)
+            setMetersPerBar(editingItem.metros_por_barra)
+            setPaint(editingItem.pintura)
+            setExtraCuts(editingItem.cortes_extras || 0)
+            setExtraWelds(editingItem.soldas_extras || 0)
+        }
+    }, [editingItem])
 
     const selectedProfile = profiles.find(p => p.id === profileId)
 
@@ -39,7 +60,7 @@ export function AddItemModal({ profiles, onAdd, paintPercentage }: AddItemModalP
         ? calculateItemStats(selectedProfile.custo_por_metro, quantity, metersPerBar, paint, paintPercentage)
         : { totalMeters: 0, costMaterial: 0, costPaint: 0, costMaterialWithPaint: 0 }
 
-    const handleAdd = () => {
+    const handleSave = () => {
         if (!selectedProfile) {
             toast.error("Selecione um perfil")
             return
@@ -69,8 +90,8 @@ export function AddItemModal({ profiles, onAdd, paintPercentage }: AddItemModalP
 
         setErrors({})
 
-        const newItem: QuoteItem = {
-            id: crypto.randomUUID(),
+        const itemData: QuoteItem = {
+            id: editingItem?.id || crypto.randomUUID(),
             type: 'metalon',
             profile_id: selectedProfile.id,
             profile_nome: selectedProfile.nome,
@@ -86,24 +107,41 @@ export function AddItemModal({ profiles, onAdd, paintPercentage }: AddItemModalP
             total_item: stats.costMaterialWithPaint
         }
 
-        onAdd(newItem)
-        setOpen(false)
-        // Reset defaults but keep some sticky if useful
-        setQuantity(1)
-        setExtraCuts(0)
-        setExtraWelds(0)
+        if (editingItem && onUpdate) {
+            onUpdate(itemData)
+        } else {
+            onAdd(itemData)
+        }
+
+        setModalOpen(false)
+
+        // Reset only if adding new (not editing)
+        if (!editingItem) {
+            setQuantity(1)
+            setExtraCuts(0)
+            setExtraWelds(0)
+        }
+    }
+
+    const handleDelete = () => {
+        if (editingItem && onDelete) {
+            onDelete(editingItem.id)
+            setModalOpen(false)
+        }
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="w-full h-12 text-base" variant="outline">
-                    <Plus className="mr-2 h-5 w-5" /> Adicionar Barra Metalon
-                </Button>
-            </DialogTrigger>
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+            {!editingItem && (
+                <DialogTrigger asChild>
+                    <Button className="w-full h-12 text-base" variant="outline">
+                        <Plus className="mr-2 h-5 w-5" /> Barra Metalon
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Adicionar Barra</DialogTitle>
+                    <DialogTitle>{editingItem ? 'Editar Barra' : 'Adicionar Barra'}</DialogTitle>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
@@ -187,9 +225,20 @@ export function AddItemModal({ profiles, onAdd, paintPercentage }: AddItemModalP
 
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                    <Button onClick={handleAdd} disabled={!selectedProfile}>Adicionar</Button>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                    {editingItem && onDelete && (
+                        <Button variant="destructive" onClick={handleDelete} className="sm:mr-auto">
+                            Excluir
+                        </Button>
+                    )}
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <Button variant="outline" onClick={() => setModalOpen(false)} className="flex-1 sm:flex-initial">
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSave} disabled={!selectedProfile} className="flex-1 sm:flex-initial">
+                            {editingItem ? 'Salvar' : 'Adicionar'}
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

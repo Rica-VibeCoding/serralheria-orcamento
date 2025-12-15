@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -152,6 +152,7 @@ export function QuoteViewModal({ quoteId, open, onOpenChange }: QuoteViewModalPr
             custo_soldas: quote.custo_soldas,
             custo_transporte: quote.custo_transporte,
             custo_produtos_genericos: quote.custo_produtos_genericos,
+            produtos_com_markup: quote.custo_produtos_genericos * quote.pontuacao_aplicada,
             valor_final: quote.valor_final,
             lucro_absoluto: quote.lucro_absoluto,
             lucro_percentual: quote.lucro_percentual
@@ -176,6 +177,10 @@ export function QuoteViewModal({ quoteId, open, onOpenChange }: QuoteViewModalPr
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Carregando orçamento</DialogTitle>
+                        <DialogDescription>Aguarde enquanto carregamos os dados...</DialogDescription>
+                    </DialogHeader>
                     <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
@@ -195,9 +200,9 @@ export function QuoteViewModal({ quoteId, open, onOpenChange }: QuoteViewModalPr
             <DialogContent className="max-w-[90%] md:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Orçamento - {client.name}</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <DialogDescription>
                         Criado em {date.toLocaleDateString('pt-BR')} às {date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    </DialogDescription>
                 </DialogHeader>
 
                 <ScrollArea className="flex-1 pr-4">
