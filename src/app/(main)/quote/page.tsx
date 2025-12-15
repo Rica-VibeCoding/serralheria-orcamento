@@ -271,12 +271,12 @@ function QuotePageContent() {
     return (
         <div className="space-y-6 pb-20">
             {/* --- TOPO --- */}
-            <Card className="bg-gradient-to-br from-slate-100 via-slate-50 to-zinc-100 border-slate-300/50 shadow-lg backdrop-blur-sm">
+            <Card className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border-slate-400/60 shadow-xl">
                 <CardHeader className="pb-4">
                     {/* Mini-card unindo título e botão - efeito vidro */}
-                    <div className="flex items-center justify-between bg-white/70 backdrop-blur-md border border-white/50 rounded-lg px-3 py-2 shadow-sm">
+                    <div className="flex items-center justify-between bg-white/80 backdrop-blur-md border border-slate-300/70 rounded-lg px-3 py-2 shadow-md">
                         <div className="flex items-center gap-3">
-                            <CardTitle className="text-xl text-slate-800">Orçamento</CardTitle>
+                            <CardTitle className="text-xl font-bold text-slate-700">Orçamento</CardTitle>
                             <div className="flex items-center gap-2">
                                 {isSaving ? (
                                     <span className="flex items-center text-xs text-muted-foreground animate-pulse">
