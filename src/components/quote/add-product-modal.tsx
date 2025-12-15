@@ -123,14 +123,14 @@ export function AddProductModal({ onAdd, onUpdate, onDelete, editingProduct, isO
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Quantidade</Label>
-                            <Input type="number" min="1" value={qtd} onChange={e => setQtd(Number(e.target.value))} />
+                            <Input type="number" min="1" value={qtd} onChange={e => setQtd(Number(e.target.value))} onFocus={e => e.target.select()} />
                             {errors.quantidade && (
                                 <p className="text-xs text-destructive">{errors.quantidade}</p>
                             )}
                         </div>
                         <div className="space-y-2">
                             <Label>Valor Unit. (R$)</Label>
-                            <Input type="number" step="0.01" value={valor} onChange={e => setValor(Number(e.target.value))} />
+                            <Input type="number" step="0.01" value={valor} onChange={e => setValor(Number(e.target.value))} onFocus={e => e.target.select()} />
                             {errors.valor_unitario && (
                                 <p className="text-xs text-destructive">{errors.valor_unitario}</p>
                             )}

@@ -92,6 +92,7 @@ export function ConfigForm() {
                                 step="0.01"
                                 value={config.valor_por_corte}
                                 onChange={handleChange}
+                                onFocus={e => e.target.select()}
                             />
                         </div>
                         <div className="space-y-2">
@@ -103,6 +104,7 @@ export function ConfigForm() {
                                 step="0.01"
                                 value={config.valor_por_solda}
                                 onChange={handleChange}
+                                onFocus={e => e.target.select()}
                             />
                         </div>
                     </div>
@@ -117,6 +119,7 @@ export function ConfigForm() {
                                 step="0.01"
                                 value={config.valor_por_km}
                                 onChange={handleChange}
+                                onFocus={e => e.target.select()}
                             />
                         </div>
                         <div className="space-y-2">
@@ -128,6 +131,7 @@ export function ConfigForm() {
                                 step="1"
                                 value={config.percentual_pintura_default}
                                 onChange={handleChange}
+                                onFocus={e => e.target.select()}
                             />
                         </div>
                     </div>
@@ -140,6 +144,7 @@ export function ConfigForm() {
                             type="number"
                             value={config.validade_padrao}
                             onChange={handleChange}
+                            onFocus={e => e.target.select()}
                         />
                     </div>
 

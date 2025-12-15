@@ -169,6 +169,7 @@ export function AddItemModal({ profiles, onAdd, onUpdate, onDelete, editingItem,
                                 min="1"
                                 value={quantity}
                                 onChange={e => setQuantity(Number(e.target.value))}
+                                onFocus={e => e.target.select()}
                             />
                             {errors.quantidade && (
                                 <p className="text-xs text-destructive">{errors.quantidade}</p>
@@ -181,6 +182,7 @@ export function AddItemModal({ profiles, onAdd, onUpdate, onDelete, editingItem,
                                 step="0.1"
                                 value={metersPerBar}
                                 onChange={e => setMetersPerBar(Number(e.target.value))}
+                                onFocus={e => e.target.select()}
                             />
                             {errors.metros_por_barra && (
                                 <p className="text-xs text-destructive">{errors.metros_por_barra}</p>
@@ -199,11 +201,11 @@ export function AddItemModal({ profiles, onAdd, onUpdate, onDelete, editingItem,
                     <div className="grid grid-cols-2 gap-4 bg-muted/50 p-3 rounded-md">
                         <div className="space-y-1">
                             <Label className="text-xs">Cortes Extras</Label>
-                            <Input type="number" value={extraCuts} onChange={e => setExtraCuts(Number(e.target.value))} className="h-8" />
+                            <Input type="number" value={extraCuts} onChange={e => setExtraCuts(Number(e.target.value))} onFocus={e => e.target.select()} className="h-8" />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs">Soldas Extras</Label>
-                            <Input type="number" value={extraWelds} onChange={e => setExtraWelds(Number(e.target.value))} className="h-8" />
+                            <Input type="number" value={extraWelds} onChange={e => setExtraWelds(Number(e.target.value))} onFocus={e => e.target.select()} className="h-8" />
                         </div>
                         <p className="text-[10px] text-muted-foreground col-span-2">
                             *Já inclui 1 corte e 1 solda automáticos por barra.

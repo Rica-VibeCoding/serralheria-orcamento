@@ -183,6 +183,7 @@ export function ProfilesList() {
                                     step="0.01"
                                     value={newProfile.custo_por_metro}
                                     onChange={e => setNewProfile({ ...newProfile, custo_por_metro: parseFloat(e.target.value) })}
+                                    onFocus={e => e.target.select()}
                                 />
                             </div>
                             <Button onClick={handleAdd} className="w-full" disabled={loading}>
@@ -261,6 +262,7 @@ export function ProfilesList() {
                                 step="0.01"
                                 value={editProfile.custo_por_metro}
                                 onChange={e => setEditProfile({ ...editProfile, custo_por_metro: parseFloat(e.target.value) })}
+                                onFocus={e => e.target.select()}
                             />
                         </div>
                         <Button onClick={handleEdit} className="w-full" disabled={loading}>

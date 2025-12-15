@@ -328,6 +328,7 @@ function QuotePageContent() {
                                 type="number"
                                 value={km}
                                 onChange={e => setKm(parseFloat(e.target.value) || 0)}
+                                onFocus={e => e.target.select()}
                                 className={FORM_CONTROL_HEIGHT}
                             />
                         </div>
