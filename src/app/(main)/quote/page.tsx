@@ -10,9 +10,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { FileText, Copy, Loader2, RefreshCw, CheckCircle2 } from "lucide-react"
+import { FileText, Copy, Loader2, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 
 import { AddItemModal } from "@/components/quote/add-item-modal"
 import { AddProductModal } from "@/components/quote/add-product-modal"
@@ -21,6 +21,8 @@ import { calculateQuoteTotals, formatCurrency, calculateItemStats } from "@/lib/
 import { generateWhatsAppText } from "@/lib/whatsapp"
 import { supabase } from "@/lib/supabase/client"
 import { useRequireAuth } from "@/lib/hooks/use-auth"
+import { useQuoteData } from "@/lib/hooks/use-quote-data"
+import { useAutoSave } from "@/lib/hooks/use-auto-save"
 import type { Client, MetalonProfile, QuoteItem, GenericProduct, Configuration, Markup } from "@/types"
 
 // UI Constants for consistency and easy refactoring
@@ -39,14 +41,14 @@ function QuotePageContent() {
     const editQuoteId = searchParams?.get('edit')
 
     // Data State
-    const [config, setConfig] = useState<Configuration>({
-        id: '', user_id: '',
-        valor_por_corte: 5, valor_por_solda: 10, valor_por_km: 2.5,
-        percentual_pintura_default: 15, validade_padrao: 15
-    })
-    const [allClients, setAllClients] = useState<Client[]>([])
-    const [allProfiles, setAllProfiles] = useState<MetalonProfile[]>([])
-    const [allMarkups, setAllMarkups] = useState<Markup[]>([])
+    const { config, allClients, setAllClients, allProfiles, allMarkups, isLoading: isLoadingData } = useQuoteData(user?.id)
+
+    // Derived state for default values
+    useEffect(() => {
+        if (config.id) {
+            setValidity(prev => prev === 15 ? config.validade_padrao : prev)
+        }
+    }, [config.id, config.validade_padrao])
 
     // Quote State
     const [clientId, setClientId] = useState<string>("")
@@ -59,8 +61,8 @@ function QuotePageContent() {
     const [products, setProducts] = useState<GenericProduct[]>([])
     const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null)
     const [isLoadingQuote, setIsLoadingQuote] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
-    const [lastSaved, setLastSaved] = useState<Date | null>(null)
+    // Refs for optimization
+    const isFirstLoad = useRef(true)
 
     // Item editing state
     const [editingItemId, setEditingItemId] = useState<string | null>(null)
@@ -69,36 +71,7 @@ function QuotePageContent() {
     const [editingProductId, setEditingProductId] = useState<string | null>(null)
     const [isProductModalOpen, setIsProductModalOpen] = useState(false)
 
-    // Refs for optimization
-    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const isFirstLoad = useRef(true)
 
-    // Load Data - Optimized with Promise.all to avoid waterfall
-    useEffect(() => {
-        if (!user) return
-
-        async function fetchData() {
-            // Type narrowing: user is guaranteed to exist here due to useRequireAuth
-            const userId = user!.id
-
-            // Fetch all data in parallel
-            const [confRes, clsRes, profsRes, marksRes] = await Promise.all([
-                supabase.from('so_configurations').select('*').eq('user_id', userId).single(),
-                supabase.from('so_clients').select('*').eq('user_id', userId),
-                supabase.from('so_profiles_metalon').select('*').eq('user_id', userId),
-                supabase.from('so_markups').select('*').eq('user_id', userId)
-            ])
-
-            if (confRes.data) {
-                setConfig(confRes.data)
-                setValidity(confRes.data.validade_padrao)
-            }
-            if (clsRes.data) setAllClients(clsRes.data)
-            if (profsRes.data) setAllProfiles(profsRes.data)
-            if (marksRes.data) setAllMarkups(marksRes.data)
-        }
-        fetchData()
-    }, [user])
 
     // Load existing quote for editing
     useEffect(() => {
@@ -233,12 +206,17 @@ function QuotePageContent() {
         setIsProductModalOpen(false)
     }, [])
 
+    const [isCopied, setIsCopied] = useState(false)
+
     const handleCopyWhatsApp = useCallback(() => {
         const text = generateWhatsAppText(
             client, items, products, totals, markupValue, km, validity, obs
         )
         navigator.clipboard.writeText(text)
         toast.success("Orçamento copiado para área de transferência!")
+
+        setIsCopied(true)
+        setTimeout(() => setIsCopied(false), 2000)
     }, [client, items, products, totals, markupValue, km, validity, obs])
 
     const handleNewQuote = useCallback((newClient: Client) => {
@@ -265,123 +243,21 @@ function QuotePageContent() {
     }, [])
 
     // ----------- AUTO-SAVE LOGIC -----------
-    const saveQuoteToDb = useCallback(async () => {
-        if (!clientId || !user) return
-
-        setIsSaving(true)
-        console.log("💾 Auto-saving...", { editingQuoteId })
-
-        try {
-            let currentQuoteId = editingQuoteId
-
-            // Prepare Payload
-            const quotePayload = {
-                client_id: clientId,
-                pontuacao_aplicada: markupValue,
-                km_rodado: km,
-                validade_dias: validity,
-                observacoes: obs,
-                total_material: totals.total_material,
-                subtotal_pos_markup: totals.subtotal_pos_markup,
-                custo_cortes: totals.custo_cortes,
-                custo_soldas: totals.custo_soldas,
-                custo_transporte: totals.custo_transporte,
-                custo_produtos_genericos: totals.custo_produtos_genericos,
-                valor_final: totals.valor_final,
-                lucro_absoluto: totals.lucro_absoluto,
-                lucro_percentual: totals.lucro_percentual,
-                status: 'open',
-                user_id: user.id
-            }
-
-            if (currentQuoteId) {
-                // UPDATE
-                const { error } = await supabase
-                    .from('so_quotes')
-                    .update(quotePayload)
-                    .eq('id', currentQuoteId)
-
-                if (error) throw error
-            } else {
-                // INSERT
-                const { data, error } = await supabase
-                    .from('so_quotes')
-                    .insert(quotePayload)
-                    .select()
-                    .single()
-
-                if (error) throw error
-                if (data) {
-                    setEditingQuoteId(data.id)
-                    currentQuoteId = data.id
-                }
-            }
-
-            if (currentQuoteId) {
-                // Items & Products - Full Replace Strategy (Simpler for consistency)
-                // Delete old
-                await supabase.from('so_quote_items').delete().eq('quote_id', currentQuoteId)
-                await supabase.from('so_quote_generic_products').delete().eq('quote_id', currentQuoteId)
-
-                // Insert Items
-                if (items.length > 0) {
-                    const quoteItemsPayload = items.map(item => ({
-                        quote_id: currentQuoteId,
-                        profile_id: item.profile_id,
-                        profile_snapshot_nome: item.profile_nome,
-                        quantidade: item.quantidade,
-                        metros_por_barra: item.metros_por_barra,
-                        pintura: item.pintura,
-                        custo_material_item: item.custo_material_item,
-                        cortes_extras: item.cortes_extras,
-                        soldas_extras: item.soldas_extras
-                    }))
-                    const { error: errItems } = await supabase.from('so_quote_items').insert(quoteItemsPayload)
-                    if (errItems) console.error("Error saving items", errItems)
-                }
-
-                // Insert Products
-                if (products.length > 0) {
-                    const genericPayload = products.map(prod => ({
-                        quote_id: currentQuoteId,
-                        descricao: prod.descricao,
-                        quantidade: prod.quantidade,
-                        valor_unitario: prod.valor_unitario
-                    }))
-                    const { error: errProds } = await supabase.from('so_quote_generic_products').insert(genericPayload)
-                    if (errProds) console.error("Error saving products", errProds)
-                }
-
-                setLastSaved(new Date())
-            }
-
-        } catch (error) {
-            console.error("Auto-save failed:", error)
-            toast.error("Erro ao salvar automaticamente")
-        } finally {
-            setIsSaving(false)
-        }
-    }, [clientId, user, editingQuoteId, markupValue, km, validity, obs, totals, items, products])
-
-    // Trigger Auto-save on data changes
-    useEffect(() => {
-        // Skip first load or if no client selected
-        if (!clientId || isFirstLoad.current || isLoadingQuote) {
-            if (!isLoadingQuote) isFirstLoad.current = false
-            return
-        }
-
-        // Debounce logic
-        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-
-        saveTimeoutRef.current = setTimeout(() => {
-            saveQuoteToDb()
-        }, 1000) // 1 second debounce
-
-        return () => {
-            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-        }
-    }, [clientId, markupValue, km, validity, obs, items, products, saveQuoteToDb]) // Dependencies that trigger save
+    const { isSaving, lastSaved, setLastSaved } = useAutoSave({
+        clientId,
+        userId: user?.id,
+        editingQuoteId,
+        setEditingQuoteId,
+        markupValue,
+        km,
+        validity,
+        obs,
+        totals,
+        items,
+        products,
+        isFirstLoad,
+        isLoadingQuote
+    })
 
     // Fallback Markups if none in DB
     const availableMarkups = allMarkups.length > 0 ? allMarkups : [
@@ -389,7 +265,7 @@ function QuotePageContent() {
         { id: 'amg', label: 'Amigo (1.8)', value: 1.8 }
     ]
 
-    console.log("Reticências") // Force re-render just to be safe
+
     if (!user) return <div className="p-4">Carregando usuário...</div>
 
     return (
@@ -685,21 +561,42 @@ function QuotePageContent() {
                                 <FileText className="mr-2 h-4 w-4" /> Preview Orçamento
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-[90%] md:max-w-[500px] max-h-[85vh] overflow-hidden flex flex-col">
+                        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>Preview Orçamento</DialogTitle>
                                 <DialogDescription>
                                     Confira os dados antes de copiar para o WhatsApp
                                 </DialogDescription>
                             </DialogHeader>
-                            <ScrollArea className="flex-1 mt-2 border rounded-md p-4 bg-muted/20">
-                                <pre className="whitespace-pre-wrap font-sans text-sm">
-                                    {generateWhatsAppText(client, items, products, totals, markupValue, km, validity, obs)}
-                                </pre>
-                            </ScrollArea>
-                            <Button onClick={handleCopyWhatsApp} className="mt-4 w-full" size="lg">
-                                <Copy className="mr-2 h-4 w-4" /> Copiar para WhatsApp
-                            </Button>
+
+                            {/* Scrollable Content Area */}
+                            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+                                <ScrollArea className="h-full w-full rounded-md border p-4 bg-muted/20">
+                                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                                        {generateWhatsAppText(client, items, products, totals, markupValue, km, validity, obs)}
+                                    </pre>
+                                </ScrollArea>
+                            </div>
+
+                            <DialogFooter className="mt-2 shrink-0">
+                                <Button
+                                    onClick={handleCopyWhatsApp}
+                                    className={`w-full transition-all duration-300 ${isCopied ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                                    size="lg"
+                                >
+                                    {isCopied ? (
+                                        <>
+                                            <CheckCircle2 className="mr-2 h-5 w-5 animate-in zoom-in spin-in-180" />
+                                            Copiado!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Copiar para WhatsApp
+                                        </>
+                                    )}
+                                </Button>
+                            </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </CardFooter>

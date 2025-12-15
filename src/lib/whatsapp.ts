@@ -15,18 +15,17 @@ export function generateWhatsAppText(
     const clientName = client?.name || "Cliente não informado"
     const separator = "────────────────────"
 
-    // Build MATERIAL section (metalon bars) - COM MARKUP
+    // Build MATERIAL section (metalon bars) - SEM MARKUP (custo puro)
+    // NOVA REGRA: Markup é aplicado no total, não por item
     let materialLines = ""
     items.forEach(item => {
-        const paintSuffix = item.pintura ? " (com pintura)" : ""
-        const valorComMarkup = item.total_item * pontuacao // Aplicar markup ao custo
-        materialLines += `• ${item.quantidade} barra${item.quantidade > 1 ? 's' : ''} ${item.profile_nome} – ${item.metros_por_barra}m${paintSuffix}: ${formatCurrency(valorComMarkup)}\n`
+        // Mostrar apenas custo material SEM pintura (pintura vai para serviços)
+        materialLines += `• ${item.quantidade} barra${item.quantidade > 1 ? 's' : ''} ${item.profile_nome} – ${item.metros_por_barra}m: ${formatCurrency(item.custo_material_item)}\n`
     })
 
-    // Add generic products to material section - COM MARKUP
+    // Add generic products to material section - SEM MARKUP (custo puro)
     products.forEach(prod => {
-        const valorComMarkup = prod.total * pontuacao // Aplicar markup aos produtos
-        materialLines += `• ${prod.descricao} (${prod.quantidade} un.): ${formatCurrency(valorComMarkup)}\n`
+        materialLines += `• ${prod.descricao} (${prod.quantidade} un.): ${formatCurrency(prod.total)}\n`
     })
 
     // Build SERVIÇOS section
@@ -38,11 +37,11 @@ export function generateWhatsAppText(
         total_welds += item.quantidade + (item.soldas_extras || 0)
     })
 
-    // Calculate total paint cost - COM MARKUP (pois está no material)
+    // Calculate total paint cost - SEM MARKUP (pintura é serviço)
     let total_pintura = 0
     items.forEach(item => {
         if (item.pintura) {
-            total_pintura += (item.custo_pintura || 0) * pontuacao
+            total_pintura += item.custo_pintura || 0
         }
     })
 

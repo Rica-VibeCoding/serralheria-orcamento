@@ -72,14 +72,16 @@ export function calculateQuoteTotals(
     // PASSO 5: Lucro = markup_reservado (ou valor_final - custos totais)
     const custo_total_sem_markup = custo_total_produtos + custo_total_servicos
     const lucro_absoluto = valor_final - custo_total_sem_markup // = markup_reservado
-    const lucro_percentual = custo_total_sem_markup > 0
-        ? (lucro_absoluto / custo_total_sem_markup) * 100
+
+    // CORRIGIDO: Margem sobre VENDA (não sobre custo)
+    const lucro_percentual = valor_final > 0
+        ? (lucro_absoluto / valor_final) * 100
         : 0
 
     // Para compatibilidade com a interface existente
     const total_material = total_material_sem_pintura + custo_pintura_total // Material COM pintura (para salvar no banco)
-    const subtotal_pos_markup = total_material_sem_pintura * markup // Material SEM pintura com markup
-    const produtos_com_markup = custo_produtos_genericos * markup // Produtos com markup
+    const subtotal_pos_markup = custo_total_produtos + markup_reservado // Produtos COM markup reservado aplicado
+    const produtos_com_markup = custo_produtos_genericos // Removido markup duplicado
 
     return {
         total_material,
