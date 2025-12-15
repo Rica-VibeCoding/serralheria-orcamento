@@ -272,23 +272,26 @@ function QuotePageContent() {
         <div className="space-y-6 pb-20">
             {/* --- TOPO --- */}
             <Card className="bg-slate-50 border-slate-200">
-                <CardHeader className="pb-4 flex flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <CardTitle className="text-xl">Orçamento</CardTitle>
-                        <div className="flex items-center gap-2">
-                            {isSaving ? (
-                                <span className="flex items-center text-xs text-muted-foreground animate-pulse">
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Salvando...
-                                </span>
-                            ) : lastSaved ? (
-                                <span className="flex items-center text-xs text-green-600/70">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" /> Salvo
-                                </span>
-                            ) : null}
+                <CardHeader className="pb-4">
+                    {/* Mini-card unindo título e botão */}
+                    <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <CardTitle className="text-xl">Orçamento</CardTitle>
+                            <div className="flex items-center gap-2">
+                                {isSaving ? (
+                                    <span className="flex items-center text-xs text-muted-foreground animate-pulse">
+                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Salvando...
+                                    </span>
+                                ) : lastSaved ? (
+                                    <span className="flex items-center text-xs text-green-600/70">
+                                        <CheckCircle2 className="h-3 w-3 mr-1" /> Salvo
+                                    </span>
+                                ) : null}
+                            </div>
                         </div>
+                        {/* Botão Novo Orçamento */}
+                        <NewQuoteButton clients={allClients} onNewQuote={handleNewQuote} />
                     </div>
-                    {/* Botão Novo Orçamento (Substitui o Salvar) */}
-                    <NewQuoteButton clients={allClients} onNewQuote={handleNewQuote} />
                 </CardHeader>
                 <CardContent className={`grid ${CARD_CONTENT_GAP}`}>
                     {/* Cliente Field - Full Width */}
