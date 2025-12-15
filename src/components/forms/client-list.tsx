@@ -84,11 +84,11 @@ export function ClientList() {
                 </Dialog>
             </div>
 
-            <div className="grid gap-1">
+            <div className="grid gap-2">
                 {filteredClients.map((client) => (
                     <div
                         key={client.id}
-                        className="group flex items-center justify-between p-2 rounded-md border bg-card hover:bg-accent/50 transition-all cursor-pointer active:scale-[0.99]"
+                        className="group flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-[0.99]"
                         onClick={() => handleEditOpen(client)}
                     >
                         <div className="flex items-center gap-3 min-w-0 flex-1">

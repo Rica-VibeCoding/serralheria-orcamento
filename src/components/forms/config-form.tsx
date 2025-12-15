@@ -75,9 +75,9 @@ export function ConfigForm() {
     }
 
     return (
-        <Card>
+        <Card className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border-slate-400/60 shadow-xl">
             <CardHeader>
-                <CardTitle>Configurações Gerais</CardTitle>
+                <CardTitle className="text-slate-700">Configurações Gerais</CardTitle>
                 <CardDescription>Defina os valores padrão para seus orçamentos.</CardDescription>
             </CardHeader>
             <CardContent>

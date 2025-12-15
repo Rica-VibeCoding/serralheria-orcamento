@@ -141,21 +141,26 @@ export default function QuotesPage() {
     if (!user) return <div className="p-4">Carregando usuário...</div>
 
     return (
-        <div className="space-y-6 pb-20">
-            <div>
-                <h2 className="text-lg font-semibold tracking-tight">Histórico de Orçamentos</h2>
-                <p className="text-sm text-muted-foreground">Visualize e gerencie seus orçamentos salvos.</p>
-            </div>
+        <div className="space-y-4 pb-20">
+            {/* Container com fundo degradê metálico */}
+            <div className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border border-slate-300/60 rounded-xl p-4 shadow-lg space-y-4">
+                {/* Header */}
+                <div>
+                    <h2 className="text-lg font-bold tracking-tight text-slate-700">Histórico de Orçamentos</h2>
+                    <p className="text-sm text-slate-500">Visualize e gerencie seus orçamentos salvos.</p>
+                </div>
 
-            <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por cliente ou ID..."
-                        className="pl-8"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+                {/* Busca */}
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar por cliente ou ID..."
+                            className="pl-8 bg-white/80 border-slate-300"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -170,7 +175,7 @@ export default function QuotesPage() {
                         const date = new Date(quote.created_at)
 
                         return (
-                            <Card key={quote.id} className="hover:bg-accent/30 transition-colors">
+                            <Card key={quote.id} className="bg-white border-slate-200 shadow-md hover:shadow-lg transition-all">
                                 <CardContent className="p-4">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex-1">

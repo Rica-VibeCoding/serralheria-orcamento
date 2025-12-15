@@ -26,7 +26,7 @@ export function NewQuoteButton({ clients, onNewQuote }: NewQuoteButtonProps) {
             isOpen={open}
             onOpenChange={setOpen}
             trigger={
-                <Button size="icon" className="h-9 w-9 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-md">
+                <Button size="icon" className="h-9 w-9 bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-full">
                     <Plus className="h-5 w-5" />
                     <span className="sr-only">Novo Orçamento</span>
                 </Button>

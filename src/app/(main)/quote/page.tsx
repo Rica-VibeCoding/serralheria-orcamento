@@ -271,24 +271,27 @@ function QuotePageContent() {
     return (
         <div className="space-y-6 pb-20">
             {/* --- TOPO --- */}
-            <Card>
-                <CardHeader className="pb-4 flex flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <CardTitle className="text-xl">Dados do Orçamento</CardTitle>
-                        <div className="flex items-center gap-2">
-                            {isSaving ? (
-                                <span className="flex items-center text-xs text-muted-foreground animate-pulse">
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Salvando...
-                                </span>
-                            ) : lastSaved ? (
-                                <span className="flex items-center text-xs text-green-600/70">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" /> Salvo
-                                </span>
-                            ) : null}
+            <Card className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border-slate-400/60 shadow-xl">
+                <CardHeader className="pb-4">
+                    {/* Mini-card unindo título e botão - efeito vidro */}
+                    <div className="flex items-center justify-between bg-white/80 backdrop-blur-md border border-slate-300/70 rounded-lg px-3 py-2 shadow-md">
+                        <div className="flex items-center gap-3">
+                            <CardTitle className="text-xl font-bold text-slate-700">Orçamento</CardTitle>
+                            <div className="flex items-center gap-2">
+                                {isSaving ? (
+                                    <span className="flex items-center text-xs text-muted-foreground animate-pulse">
+                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Salvando...
+                                    </span>
+                                ) : lastSaved ? (
+                                    <span className="flex items-center text-xs text-green-600/70">
+                                        <CheckCircle2 className="h-3 w-3 mr-1" /> Salvo
+                                    </span>
+                                ) : null}
+                            </div>
                         </div>
+                        {/* Botão Novo Orçamento */}
+                        <NewQuoteButton clients={allClients} onNewQuote={handleNewQuote} />
                     </div>
-                    {/* Botão Novo Orçamento (Substitui o Salvar) */}
-                    <NewQuoteButton clients={allClients} onNewQuote={handleNewQuote} />
                 </CardHeader>
                 <CardContent className={`grid ${CARD_CONTENT_GAP}`}>
                     {/* Cliente Field - Full Width */}
@@ -470,7 +473,7 @@ function QuotePageContent() {
             </div>
 
             {/* --- RODAPÉ (TOTAIS) --- */}
-            <Card className="bg-muted/30">
+            <Card className="bg-amber-50/50 border-amber-200">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Resumo</CardTitle>
                 </CardHeader>
@@ -547,9 +550,9 @@ function QuotePageContent() {
                                 <Separator />
 
                                 {/* Valor de Venda (VALOR FINAL) */}
-                                <div className="flex justify-between items-center bg-primary/10 p-3 rounded-md">
-                                    <span className="font-bold text-base">Valor de Venda</span>
-                                    <span className="font-bold text-xl">{formatCurrency(totals.valor_final)}</span>
+                                <div className="flex justify-between items-center bg-green-100 border border-green-300 p-3 rounded-md">
+                                    <span className="font-bold text-base text-green-900">Valor de Venda</span>
+                                    <span className="font-bold text-xl text-green-800">{formatCurrency(totals.valor_final)}</span>
                                 </div>
                             </>
                         )
