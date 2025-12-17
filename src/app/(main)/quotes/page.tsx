@@ -186,11 +186,11 @@ export default function QuotesPage() {
                                                 value={quote.status}
                                                 onValueChange={(value) => handleStatusChange(quote.id, value)}
                                             >
-                                                <SelectTrigger className="w-[85px] h-5 text-[10px] border-slate-200" onClick={(e) => e.stopPropagation()}>
+                                                <SelectTrigger className="w-[68px] h-5 text-[10px] border-slate-200" onClick={(e) => e.stopPropagation()}>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="open">Não fechou</SelectItem>
+                                                    <SelectItem value="open">Aberto</SelectItem>
                                                     <SelectItem value="closed">Fechado</SelectItem>
                                                     <SelectItem value="inactive" className="text-destructive">Excluir</SelectItem>
                                                 </SelectContent>
