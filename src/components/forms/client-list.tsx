@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/hooks/use-auth"
 import type { Client } from "@/types"
 import { ClientForm } from "./client-form"
+import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 
 export function ClientList() {
     const { user } = useAuth()
@@ -56,7 +57,12 @@ export function ClientList() {
         setEditOpen(true)
     }
 
+    const handleRefresh = async () => {
+        await fetchClients()
+    }
+
     return (
+        <PullToRefresh onRefresh={handleRefresh} className="min-h-[50vh]">
         <div className="space-y-4">
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -138,5 +144,6 @@ export function ClientList() {
                 </DialogContent>
             </Dialog>
         </div>
+        </PullToRefresh>
     )
 }

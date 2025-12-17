@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/calculations"
 import Link from "next/link"
 import { QuoteViewModal } from "@/components/quote/quote-view-modal"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 
 interface QuoteWithClient {
     id: string
@@ -129,9 +130,14 @@ export default function QuotesPage() {
         ))
     }
 
+    const handleRefresh = async () => {
+        await fetchQuotes()
+    }
+
     if (!user) return <div className="p-4">Carregando usuário...</div>
 
     return (
+        <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
         <div className="space-y-3 pb-20">
             {/* Container com fundo degradê metálico */}
             <div className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border border-slate-300/60 rounded-xl p-3 shadow-lg space-y-2">
@@ -233,5 +239,6 @@ export default function QuotesPage() {
                 />
             )}
         </div>
+        </PullToRefresh>
     )
 }
