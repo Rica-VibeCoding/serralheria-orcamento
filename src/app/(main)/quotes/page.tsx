@@ -4,9 +4,8 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, FileText, Eye, Calendar, DollarSign } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Search, FileText, Eye, Calendar } from "lucide-react"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase/client"
 import { useRequireAuth } from "@/lib/hooks/use-auth"
@@ -85,14 +84,6 @@ export default function QuotesPage() {
         return `R-${number.toString().padStart(4, '0')}`
     }
 
-    const getStatusBadge = (status: string) => {
-        const statusConfig = {
-            open: { label: 'Não fechou', variant: 'secondary' as const, color: 'text-gray-700' },
-            closed: { label: 'Fechado', variant: 'default' as const, color: 'text-green-700' }
-        }
-        return statusConfig[status as keyof typeof statusConfig] || statusConfig.open
-    }
-
     const handleStatusChange = async (quoteId: string, newStatus: string) => {
         // If deleting (inactive), remove from UI immediately
         if (newStatus === 'inactive') {
@@ -141,26 +132,21 @@ export default function QuotesPage() {
     if (!user) return <div className="p-4">Carregando usuário...</div>
 
     return (
-        <div className="space-y-4 pb-20">
+        <div className="space-y-3 pb-20">
             {/* Container com fundo degradê metálico */}
-            <div className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border border-slate-300/60 rounded-xl p-4 shadow-lg space-y-4">
+            <div className="bg-gradient-to-br from-slate-200 via-slate-100 to-zinc-200 border border-slate-300/60 rounded-xl p-3 shadow-lg space-y-2">
                 {/* Header */}
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-700">Histórico de Orçamentos</h2>
-                    <p className="text-sm text-slate-500">Visualize e gerencie seus orçamentos salvos.</p>
-                </div>
+                <h2 className="text-base font-bold tracking-tight text-slate-700">Histórico de Orçamentos</h2>
 
                 {/* Busca */}
-                <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar por cliente ou ID..."
-                            className="pl-8 bg-white/80 border-slate-300"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar por cliente ou ID..."
+                        className="pl-8 bg-white/80 border-slate-300 h-9"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             </div>
 
@@ -169,39 +155,27 @@ export default function QuotesPage() {
                     Carregando orçamentos...
                 </div>
             ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {filteredQuotes.map((quote) => {
-                        const statusBadge = getStatusBadge(quote.status)
                         const date = new Date(quote.created_at)
 
                         return (
-                            <Card key={quote.id} className="bg-white border-slate-200 shadow-md hover:shadow-lg transition-all">
-                                <CardContent className="p-4">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                                <span className="font-semibold">{quote.client_name}</span>
-                                                <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                                    {formatQuoteNumber(quote.quote_number)}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" />
-                                                    {date.toLocaleDateString('pt-BR')}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <DollarSign className="h-3 w-3" />
-                                                    Markup: {quote.pontuacao_aplicada}x
-                                                </span>
-                                            </div>
+                            <Card key={quote.id} className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-all">
+                                <CardContent className="p-3">
+                                    {/* Linha 1: Cliente + Status */}
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <FileText className="h-4 w-4 text-slate-400 shrink-0" />
+                                            <span className="font-semibold text-slate-800 truncate">{quote.client_name}</span>
+                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                                                {formatQuoteNumber(quote.quote_number)}
+                                            </span>
                                         </div>
                                         <Select
                                             value={quote.status}
                                             onValueChange={(value) => handleStatusChange(quote.id, value)}
                                         >
-                                            <SelectTrigger className="w-[130px] h-8">
+                                            <SelectTrigger className="w-[110px] h-7 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -212,28 +186,39 @@ export default function QuotesPage() {
                                         </Select>
                                     </div>
 
+                                    {/* Linha 2: Info + Valor + Ações */}
                                     <div className="flex justify-between items-center">
-                                        <div>
-                                            <div className="text-2xl font-bold text-primary">
-                                                {formatCurrency(quote.valor_final)}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                Lucro: {quote.lucro_percentual.toFixed(1)}%
-                                            </div>
+                                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                                            <span className="flex items-center gap-1">
+                                                <Calendar className="h-3 w-3" />
+                                                {date.toLocaleDateString('pt-BR')}
+                                            </span>
+                                            <span>Markup: {quote.pontuacao_aplicada}x</span>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setSelectedQuoteId(quote.id)}
-                                            >
-                                                <Eye className="h-4 w-4 mr-1" /> Ver
-                                            </Button>
-                                            <Link href={`/quote?edit=${quote.id}`}>
-                                                <Button variant="default" size="sm">
-                                                    Editar
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-right">
+                                                <div className="text-base font-bold text-primary">
+                                                    {formatCurrency(quote.valor_final)}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400">
+                                                    Lucro: {quote.lucro_percentual.toFixed(1)}%
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 px-2"
+                                                    onClick={() => setSelectedQuoteId(quote.id)}
+                                                >
+                                                    <Eye className="h-3.5 w-3.5 mr-1" /> Ver
                                                 </Button>
-                                            </Link>
+                                                <Link href={`/quote?edit=${quote.id}`}>
+                                                    <Button variant="default" size="sm" className="h-7 px-2">
+                                                        Editar
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>
