@@ -181,7 +181,7 @@ export default function QuotesPage() {
                                             <span>{date.toLocaleDateString('pt-BR')}</span>
                                             <span>{quote.pontuacao_aplicada}x</span>
                                         </div>
-                                        <div className="flex items-center gap-1 shrink-0">
+                                        <div className="flex items-center gap-2.5 shrink-0">
                                             <Select
                                                 value={quote.status}
                                                 onValueChange={(value) => handleStatusChange(quote.id, value)}
