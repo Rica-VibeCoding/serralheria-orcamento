@@ -155,19 +155,19 @@ export default function QuotesPage() {
                     Carregando orçamentos...
                 </div>
             ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     {filteredQuotes.map((quote) => {
                         const date = new Date(quote.created_at)
 
                         return (
-                            <Card key={quote.id} className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-all">
-                                <CardContent className="p-3">
+                            <Card key={quote.id} className="bg-white border-slate-200 shadow-sm">
+                                <CardContent className="px-3 py-2">
                                     {/* Linha 1: Cliente + Status */}
-                                    <div className="flex justify-between items-center mb-2">
-                                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <FileText className="h-4 w-4 text-slate-400 shrink-0" />
-                                            <span className="font-semibold text-slate-800 truncate">{quote.client_name}</span>
-                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                            <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                            <span className="font-medium text-sm text-slate-800 truncate">{quote.client_name}</span>
+                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1 py-0.5 rounded shrink-0">
                                                 {formatQuoteNumber(quote.quote_number)}
                                             </span>
                                         </div>
@@ -175,7 +175,7 @@ export default function QuotesPage() {
                                             value={quote.status}
                                             onValueChange={(value) => handleStatusChange(quote.id, value)}
                                         >
-                                            <SelectTrigger className="w-[110px] h-7 text-xs">
+                                            <SelectTrigger className="w-[100px] h-6 text-xs border-slate-200">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -188,33 +188,33 @@ export default function QuotesPage() {
 
                                     {/* Linha 2: Info + Valor + Ações */}
                                     <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                                        <div className="flex items-center gap-3 text-[11px] text-slate-500">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="h-3 w-3" />
                                                 {date.toLocaleDateString('pt-BR')}
                                             </span>
                                             <span>Markup: {quote.pontuacao_aplicada}x</span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-right">
-                                                <div className="text-base font-bold text-primary">
+                                        <div className="flex items-center gap-2">
+                                            <div className="text-right leading-tight">
+                                                <span className="text-sm font-bold text-primary">
                                                     {formatCurrency(quote.valor_final)}
-                                                </div>
-                                                <div className="text-[10px] text-slate-400">
-                                                    Lucro: {quote.lucro_percentual.toFixed(1)}%
-                                                </div>
+                                                </span>
+                                                <span className="text-[10px] text-slate-400 ml-1">
+                                                    {quote.lucro_percentual.toFixed(1)}%
+                                                </span>
                                             </div>
-                                            <div className="flex gap-1.5">
+                                            <div className="flex gap-1">
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="h-7 px-2"
+                                                    className="h-6 px-2 text-xs"
                                                     onClick={() => setSelectedQuoteId(quote.id)}
                                                 >
-                                                    <Eye className="h-3.5 w-3.5 mr-1" /> Ver
+                                                    <Eye className="h-3 w-3 mr-1" /> Ver
                                                 </Button>
                                                 <Link href={`/quote?edit=${quote.id}`}>
-                                                    <Button variant="default" size="sm" className="h-7 px-2">
+                                                    <Button variant="default" size="sm" className="h-6 px-2 text-xs">
                                                         Editar
                                                     </Button>
                                                 </Link>
