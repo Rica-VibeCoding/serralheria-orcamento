@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, FileText, Eye, Calendar } from "lucide-react"
+import { Search, FileText, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase/client"
 import { useRequireAuth } from "@/lib/hooks/use-auth"
@@ -155,70 +155,63 @@ export default function QuotesPage() {
                     Carregando orçamentos...
                 </div>
             ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                     {filteredQuotes.map((quote) => {
                         const date = new Date(quote.created_at)
 
                         return (
-                            <Card key={quote.id} className="bg-white border-slate-200 shadow-sm">
-                                <CardContent className="px-3 py-2">
-                                    {/* Linha 1: Cliente + Status */}
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                            <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                                            <span className="font-medium text-sm text-slate-800 truncate">{quote.client_name}</span>
-                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1 py-0.5 rounded shrink-0">
-                                                {formatQuoteNumber(quote.quote_number)}
-                                            </span>
-                                        </div>
-                                        <Select
-                                            value={quote.status}
-                                            onValueChange={(value) => handleStatusChange(quote.id, value)}
-                                        >
-                                            <SelectTrigger className="w-[100px] h-6 text-xs border-slate-200">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="open">Não fechou</SelectItem>
-                                                <SelectItem value="closed">Fechado</SelectItem>
-                                                <SelectItem value="inactive" className="text-destructive">Excluir</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                            <Card key={quote.id} className="relative overflow-hidden bg-white border-slate-200 !py-0">
+                                {/* Borda lateral colorida */}
+                                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-400" />
 
-                                    {/* Linha 2: Info + Valor + Ações */}
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {date.toLocaleDateString('pt-BR')}
-                                            </span>
-                                            <span>Markup: {quote.pontuacao_aplicada}x</span>
+                                <CardContent className="px-3 py-1.5 pl-3.5">
+                                    {/* Linha única compacta */}
+                                    <div className="flex items-center justify-between gap-2">
+                                        {/* Esquerda: Cliente + Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                <span className="font-semibold text-sm leading-tight truncate">{quote.client_name}</span>
+                                                <span className="text-[10px] font-mono text-muted-foreground/60">
+                                                    {formatQuoteNumber(quote.quote_number)}
+                                                </span>
+                                            </div>
+                                            <div className="text-[11px] text-muted-foreground/60 leading-tight">
+                                                {date.toLocaleDateString('pt-BR')} · {quote.pontuacao_aplicada}x
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="text-right leading-tight">
-                                                <span className="text-sm font-bold text-primary">
-                                                    {formatCurrency(quote.valor_final)}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 ml-1">
-                                                    {quote.lucro_percentual.toFixed(1)}%
-                                                </span>
+
+                                        {/* Direita: Valor + Ações */}
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <div className="text-right tabular-nums">
+                                                <span className="font-bold text-sm">{formatCurrency(quote.valor_final)}</span>
+                                                <span className="text-[10px] text-muted-foreground/50 ml-1">{quote.lucro_percentual.toFixed(0)}%</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-6 px-2 text-xs"
-                                                    onClick={() => setSelectedQuoteId(quote.id)}
-                                                >
-                                                    <Eye className="h-3 w-3 mr-1" /> Ver
+                                            <Select
+                                                value={quote.status}
+                                                onValueChange={(value) => handleStatusChange(quote.id, value)}
+                                            >
+                                                <SelectTrigger className="w-[90px] h-6 text-[11px] border-slate-200" onClick={(e) => e.stopPropagation()}>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="open">Não fechou</SelectItem>
+                                                    <SelectItem value="closed">Fechado</SelectItem>
+                                                    <SelectItem value="inactive" className="text-destructive">Excluir</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-6 px-2 text-[11px]"
+                                                onClick={() => setSelectedQuoteId(quote.id)}
+                                            >
+                                                <Eye className="h-3 w-3" />
+                                            </Button>
+                                            <Link href={`/quote?edit=${quote.id}`}>
+                                                <Button variant="default" size="sm" className="h-6 px-2 text-[11px]">
+                                                    Editar
                                                 </Button>
-                                                <Link href={`/quote?edit=${quote.id}`}>
-                                                    <Button variant="default" size="sm" className="h-6 px-2 text-xs">
-                                                        Editar
-                                                    </Button>
-                                                </Link>
-                                            </div>
+                                            </Link>
                                         </div>
                                     </div>
                                 </CardContent>
