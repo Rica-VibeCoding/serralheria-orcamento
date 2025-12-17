@@ -186,7 +186,7 @@ export default function QuotesPage() {
                                                 value={quote.status}
                                                 onValueChange={(value) => handleStatusChange(quote.id, value)}
                                             >
-                                                <SelectTrigger className="w-[68px] h-5 text-[10px] border-slate-200" onClick={(e) => e.stopPropagation()}>
+                                                <SelectTrigger className="w-20 h-5 text-[10px] border-slate-200" onClick={(e) => e.stopPropagation()}>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
