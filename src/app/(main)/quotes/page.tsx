@@ -165,32 +165,28 @@ export default function QuotesPage() {
                                 <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-400" />
 
                                 <CardContent className="px-3 py-1.5 pl-3.5">
-                                    {/* Linha única compacta */}
+                                    {/* Linha 1: Nome + Preço */}
                                     <div className="flex items-center justify-between gap-2">
-                                        {/* Esquerda: Cliente + Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                <span className="font-semibold text-sm leading-tight truncate">{quote.client_name}</span>
-                                                <span className="text-[10px] font-mono text-muted-foreground/60">
-                                                    {formatQuoteNumber(quote.quote_number)}
-                                                </span>
-                                            </div>
-                                            <div className="text-[11px] text-muted-foreground/60 leading-tight">
-                                                {date.toLocaleDateString('pt-BR')} · {quote.pontuacao_aplicada}x
-                                            </div>
+                                        <span className="font-semibold text-sm leading-tight truncate">{quote.client_name}</span>
+                                        <div className="text-right tabular-nums shrink-0">
+                                            <span className="font-bold text-sm">{formatCurrency(quote.valor_final)}</span>
+                                            <span className="text-[10px] text-muted-foreground/50 ml-1">{quote.lucro_percentual.toFixed(0)}%</span>
                                         </div>
+                                    </div>
 
-                                        {/* Direita: Valor + Ações */}
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            <div className="text-right tabular-nums">
-                                                <span className="font-bold text-sm">{formatCurrency(quote.valor_final)}</span>
-                                                <span className="text-[10px] text-muted-foreground/50 ml-1">{quote.lucro_percentual.toFixed(0)}%</span>
-                                            </div>
+                                    {/* Linha 2: Info + Ações */}
+                                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
+                                            <span className="font-mono">{formatQuoteNumber(quote.quote_number)}</span>
+                                            <span>{date.toLocaleDateString('pt-BR')}</span>
+                                            <span>{quote.pontuacao_aplicada}x</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
                                             <Select
                                                 value={quote.status}
                                                 onValueChange={(value) => handleStatusChange(quote.id, value)}
                                             >
-                                                <SelectTrigger className="w-[90px] h-6 text-[11px] border-slate-200" onClick={(e) => e.stopPropagation()}>
+                                                <SelectTrigger className="w-[85px] h-5 text-[10px] border-slate-200" onClick={(e) => e.stopPropagation()}>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -202,13 +198,13 @@ export default function QuotesPage() {
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-6 px-2 text-[11px]"
+                                                className="h-5 w-5 p-0"
                                                 onClick={() => setSelectedQuoteId(quote.id)}
                                             >
                                                 <Eye className="h-3 w-3" />
                                             </Button>
                                             <Link href={`/quote?edit=${quote.id}`}>
-                                                <Button variant="default" size="sm" className="h-6 px-2 text-[11px]">
+                                                <Button variant="default" size="sm" className="h-5 px-2 text-[10px]">
                                                     Editar
                                                 </Button>
                                             </Link>
