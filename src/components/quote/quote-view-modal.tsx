@@ -197,16 +197,16 @@ export function QuoteViewModal({ quoteId, open, onOpenChange }: QuoteViewModalPr
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[90%] md:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
-                <DialogHeader>
+            <DialogContent className="max-w-[90%] md:max-w-[600px] max-h-[85vh] p-0 flex flex-col gap-0">
+                <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
                     <DialogTitle>Orçamento - {client.name}</DialogTitle>
                     <DialogDescription>
                         Criado em {date.toLocaleDateString('pt-BR')} às {date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </DialogDescription>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1 pr-4">
-                    <div className="space-y-4">
+                <ScrollArea className="h-[calc(85vh-180px)] px-6">
+                    <div className="space-y-4 pr-4">
                         {/* Informações do Cliente */}
                         <div className="bg-muted/30 p-3 rounded-md">
                             <div className="text-sm font-medium mb-1">Cliente</div>
@@ -325,7 +325,7 @@ export function QuoteViewModal({ quoteId, open, onOpenChange }: QuoteViewModalPr
                     </div>
                 </ScrollArea>
 
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex gap-2 px-6 py-4 border-t shrink-0">
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
                         Fechar
                     </Button>
