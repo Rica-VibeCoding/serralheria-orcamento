@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { CheckCircle2, AlertCircle, Mail, UserPlus, LogIn } from "lucide-react"
+import { CheckCircle2, AlertCircle, Mail, UserPlus, LogIn, Loader2 } from "lucide-react"
 
 function traduzirErroSupabase(mensagem: string): string {
     const traducoes: Record<string, string> = {
@@ -28,9 +28,33 @@ export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [verificandoSessao, setVerificandoSessao] = useState(true)
     const [contaCriada, setContaCriada] = useState(false)
     const [modo, setModo] = useState<"criar" | "entrar">("criar")
     const router = useRouter()
+
+    // Verifica se já tem sessão ativa ou se já logou antes
+    useEffect(() => {
+        const verificarSessao = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+
+            if (session) {
+                // Já tem sessão ativa, vai direto pro app
+                router.push("/quote")
+                return
+            }
+
+            // Verifica se já logou antes (para mostrar aba correta)
+            const jaLogouAntes = localStorage.getItem("serralheria-ja-logou")
+            if (jaLogouAntes) {
+                setModo("entrar")
+            }
+
+            setVerificandoSessao(false)
+        }
+
+        verificarSessao()
+    }, [router])
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -55,6 +79,8 @@ export default function LoginPage() {
                 duration: 5000,
             })
         } else {
+            // Salva que o usuário já logou antes
+            localStorage.setItem("serralheria-ja-logou", "true")
             toast.success("Bem-vindo de volta!")
             router.push("/quote")
         }
@@ -98,6 +124,18 @@ export default function LoginPage() {
             setContaCriada(true)
         }
         setLoading(false)
+    }
+
+    // Tela de loading enquanto verifica sessão
+    if (verificandoSessao) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-muted-foreground">Carregando...</p>
+                </div>
+            </div>
+        )
     }
 
     if (contaCriada) {
