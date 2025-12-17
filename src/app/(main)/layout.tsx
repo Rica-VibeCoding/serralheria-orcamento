@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { MainNav } from "@/components/main-nav"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
@@ -39,6 +40,12 @@ export default function MainLayout({
 }) {
     const router = useRouter()
     const { user } = useAuth()
+    const [mounted, setMounted] = useState(false)
+
+    // Evita hydration mismatch - só renderiza conteúdo dinâmico após montar no cliente
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const handleLogout = async () => {
         const toastId = toast.loading("Saindo...")
@@ -58,8 +65,8 @@ export default function MainLayout({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Avatar com iniciais */}
-                        {user?.email && (
+                        {/* Avatar com iniciais - só renderiza após montar no cliente */}
+                        {mounted && user?.email && (
                             <div
                                 className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600"
                                 title={user.email}
@@ -77,13 +84,15 @@ export default function MainLayout({
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Confirmar Logout</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        {user?.email && (
-                                            <span className="block mb-2 font-medium text-foreground">
-                                                {user.email}
-                                            </span>
-                                        )}
-                                        Tem certeza que deseja sair do sistema?
+                                    <AlertDialogDescription asChild>
+                                        <div>
+                                            {mounted && user?.email && (
+                                                <span className="block mb-2 font-medium text-foreground">
+                                                    {user.email}
+                                                </span>
+                                            )}
+                                            <span>Tem certeza que deseja sair do sistema?</span>
+                                        </div>
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
